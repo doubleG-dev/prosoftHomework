@@ -15,37 +15,31 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    delete vLayout;
-    delete hLayout;
     delete ui;
 }
 
 void MainWindow::init()
 {
-    QPushButton *btnTime = new QPushButton("Время");
-    QPushButton *btnCreate = new QPushButton("Создать");
-    QPushButton *btnDelete = new QPushButton("Удалить");
+    QPushButton *btnTime = new QPushButton("Время",this);
+    QPushButton *btnCreate = new QPushButton("Создать",this);
+    QPushButton *btnDelete = new QPushButton("Удалить",this);
 
-    vLayout = new QVBoxLayout();
-    hLayout = new QHBoxLayout();
+    m_vLayout = new QVBoxLayout(this);
+    m_hLayout = new QHBoxLayout(this);
 
 
-    hLayout->addWidget(btnCreate);
-    hLayout->addWidget(btnDelete);
+    m_hLayout->addWidget(btnCreate);
+    m_hLayout->addWidget(btnDelete);
 
-    hLayout->setSizeConstraint(QLayout::SetMinimumSize);
+    m_vLayout->addWidget(btnTime);
+    m_vLayout->addLayout(m_hLayout);
 
-    vLayout->addWidget(btnTime);
-    vLayout->addLayout(hLayout);
+    centralWidget()->setLayout(m_vLayout);
 
-    vLayout->setSizeConstraint(QLayout::SetMinimumSize);
+    resize(m_hLayout->minimumSize());
 
-    centralWidget()->setLayout(vLayout);
-
-    resize(hLayout->minimumSize());
-
-    connect(btnTime, &QPushButton::clicked, this,[this](){
-        qDebug() << dateTime.currentDateTime().toString("dd.MM HH:mm:ss");
+    connect(btnTime, &QPushButton::clicked, this, [this]{
+        qDebug() << m_dateTime.currentDateTime().toString("dd.MM HH:mm:ss");
     });
 
 
@@ -55,38 +49,35 @@ void MainWindow::init()
 
 void MainWindow::createBtn()
 {
-    if(btnColor != nullptr)
+    if(m_btnColor != nullptr)
         return;
 
     QString color = QColor(qrand()%255, qrand()%255, qrand()%255).name(QColor::NameFormat::HexRgb);
 
     QString btnStyle = QString("background-color: %1;").arg(color);
 
-    btnColor = new QPushButton(this);
-    btnColor->setText(color);
-    btnColor->setStyleSheet(btnStyle);
-    vLayout->addWidget(btnColor);
+    m_btnColor = new QPushButton(this);
+    m_btnColor->setText(color);
+    m_btnColor->setStyleSheet(btnStyle);
+    m_vLayout->addWidget(m_btnColor);
 
-    connect(btnColor, &QPushButton::clicked, this, &MainWindow::changeColor);
+    connect(m_btnColor, &QPushButton::clicked, this, &MainWindow::changeColor);
 }
 
 void MainWindow::deleteBtn()
 {
-    if(btnColor == nullptr)
+    if(m_btnColor == nullptr)
         return;
 
-    disconnect(btnColor, &QPushButton::clicked, this, &MainWindow::changeColor);
-    delete btnColor;
-    btnColor = nullptr;
+    disconnect(m_btnColor, &QPushButton::clicked, this, &MainWindow::changeColor);
+    delete m_btnColor;
+    m_btnColor = nullptr;
 }
 
 void MainWindow::changeColor()
 {
     QString color = QColor(qrand()%255, qrand()%255, qrand()%255).name(QColor::NameFormat::HexRgb);
     QString btnStyle = QString("background-color: %1;").arg(color);
-    btnColor->setText(color);
-    btnColor->setStyleSheet(btnStyle);
+    m_btnColor->setText(color);
+    m_btnColor->setStyleSheet(btnStyle);
 }
-
-
-

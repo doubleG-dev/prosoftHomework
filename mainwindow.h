@@ -19,7 +19,7 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-public slots:
+private slots:
     void init();
     void createBtn();
     void deleteBtn();
@@ -28,9 +28,9 @@ public slots:
 private:
     Ui::MainWindow *ui;
 
-    QVBoxLayout *vLayout = nullptr;
-    QHBoxLayout *hLayout = nullptr;
-    QDateTime dateTime;
-    QPushButton *btnColor = nullptr;
+    QVBoxLayout *m_vLayout = nullptr;
+    QHBoxLayout *m_hLayout = nullptr;
+    QDateTime m_dateTime;
+    QPushButton *m_btnColor = nullptr;
 };
 #endif // MAINWINDOW_H
