@@ -2,10 +2,9 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QDateTime>
 #include <QPushButton>
+#include <QTimer>
+#include <QObject>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -19,18 +18,17 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    QTimer * m_timerGenerator;
+    QTimer * m_timerButtonMove;
+
 private slots:
+
+private:
     void init();
-    void createBtn();
-    void deleteBtn();
-    void changeColor();
 
 private:
     Ui::MainWindow *ui;
+    QPushButton * m_snowFlakes;
 
-    QVBoxLayout *m_vLayout = nullptr;
-    QHBoxLayout *m_hLayout = nullptr;
-    QDateTime m_dateTime;
-    QPushButton *m_btnColor = nullptr;
 };
 #endif // MAINWINDOW_H

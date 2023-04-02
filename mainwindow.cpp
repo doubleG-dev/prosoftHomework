@@ -2,11 +2,10 @@
 #include "ui_mainwindow.h"
 
 #include <QRandomGenerator>
-#include <QDebug>
-#include <QColor>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
+    , m_timerGenerator(new QTimer(this))
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
@@ -20,64 +19,56 @@ MainWindow::~MainWindow()
 
 void MainWindow::init()
 {
-    QPushButton *btnTime = new QPushButton("Время",this);
-    QPushButton *btnCreate = new QPushButton("Создать",this);
-    QPushButton *btnDelete = new QPushButton("Удалить",this);
+    connect(m_timerGenerator, &QTimer::timeout, this, [this]{
+        m_snowFlakes = new QPushButton("*",this);
+        m_snowFlakes->installEventFilter(this);
+        m_snowFlakes->setMouseTracking(true);
 
-    m_vLayout = new QVBoxLayout(this);
-    m_hLayout = new QHBoxLayout(this);
+        m_timerButtonMove = new QTimer(this);
+
+        auto btnMove = [btnSnowFlake = this->m_snowFlakes]{
+            if(btnSnowFlake->underMouse())
+                btnSnowFlake->move(btnSnowFlake->pos().rx(),
+                               btnSnowFlake->pos().ry() + QRandomGenerator::global()->bounded(5,10));
+            else if(!btnSnowFlake->underMouse())
+                btnSnowFlake->move(btnSnowFlake->pos().rx(),
+                               btnSnowFlake->pos().ry() + QRandomGenerator::global()->bounded(5));
+        };
+
+        auto loseGame = [btnSnowFlake = this->m_snowFlakes, this]{
+            if(btnSnowFlake->pos().ry() > (this->height() - btnSnowFlake->height()))
+            {
+                QPalette pal = this->palette();
+                pal.setColor(QPalette::Window , Qt::red);
+                this->setPalette(pal);
+                this->setWindowTitle("YOU LOOSE!!!");
+            }
+        };
+
+        auto btnDelete = [btnSnowFlake = this->m_snowFlakes, stopTimer = this->m_timerButtonMove]{
+            stopTimer->deleteLater();
+            btnSnowFlake->deleteLater();
+        };
+
+        connect(m_snowFlakes, &QPushButton::clicked, this, btnDelete);
+        connect(m_timerButtonMove, &QTimer::timeout, this, loseGame);
+        connect(m_timerButtonMove, &QTimer::timeout, this, btnMove);
 
 
-    m_hLayout->addWidget(btnCreate);
-    m_hLayout->addWidget(btnDelete);
+        m_snowFlakes->resize(20,20);
+        m_snowFlakes->move(QRandomGenerator::global()->bounded(0,width() - m_snowFlakes->width()),
+                           QRandomGenerator::global()->bounded(0,100));
 
-    m_vLayout->addWidget(btnTime);
-    m_vLayout->addLayout(m_hLayout);
 
-    centralWidget()->setLayout(m_vLayout);
+        int randomTime = QRandomGenerator::global()->bounded(100,1000);
+        m_timerGenerator->start(randomTime);
+        m_timerButtonMove->start(100);
 
-    resize(m_hLayout->minimumSize());
 
-    connect(btnTime, &QPushButton::clicked, this, [this]{
-        qDebug() << m_dateTime.currentDateTime().toString("dd.MM HH:mm:ss");
+        m_snowFlakes->show();
     });
 
-
-    connect(btnCreate, &QPushButton::clicked, this, &MainWindow::createBtn);
-    connect(btnDelete, &QPushButton::clicked, this, &MainWindow::deleteBtn);
-}
-
-void MainWindow::createBtn()
-{
-    if(m_btnColor != nullptr)
-        return;
-
-    QString color = QColor(qrand()%255, qrand()%255, qrand()%255).name(QColor::NameFormat::HexRgb);
-
-    QString btnStyle = QString("background-color: %1;").arg(color);
-
-    m_btnColor = new QPushButton(this);
-    m_btnColor->setText(color);
-    m_btnColor->setStyleSheet(btnStyle);
-    m_vLayout->addWidget(m_btnColor);
-
-    connect(m_btnColor, &QPushButton::clicked, this, &MainWindow::changeColor);
-}
-
-void MainWindow::deleteBtn()
-{
-    if(m_btnColor == nullptr)
-        return;
-
-    disconnect(m_btnColor, &QPushButton::clicked, this, &MainWindow::changeColor);
-    delete m_btnColor;
-    m_btnColor = nullptr;
-}
-
-void MainWindow::changeColor()
-{
-    QString color = QColor(qrand()%255, qrand()%255, qrand()%255).name(QColor::NameFormat::HexRgb);
-    QString btnStyle = QString("background-color: %1;").arg(color);
-    m_btnColor->setText(color);
-    m_btnColor->setStyleSheet(btnStyle);
+    this->setWindowTitle("Snow Flakes");
+    int randomTime = QRandomGenerator::global()->bounded(100,1000);
+    m_timerGenerator->start(randomTime);
 }
